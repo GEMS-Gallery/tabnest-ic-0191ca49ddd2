@@ -7,7 +7,6 @@ import HashMap "mo:base/HashMap";
 import Nat "mo:base/Nat";
 import Text "mo:base/Text";
 import Time "mo:base/Time";
-import Option "mo:base/Option";
 
 actor {
   type Tab = {
@@ -20,13 +19,13 @@ actor {
   stable var nextTabId : Nat = 0;
   let tabs = HashMap.HashMap<Nat, Tab>(10, Nat.equal, Nat.hash);
 
-  public func createTab(tabType : Text, content : ?Text) : async Nat {
+  public func createTab(tabType : Text, content : Text) : async Nat {
     let id = nextTabId;
     nextTabId += 1;
     let newTab : Tab = {
       id = id;
       tabType = tabType;
-      content = Option.get(content, "");
+      content = content;
       timestamp = Time.now();
     };
     tabs.put(id, newTab);

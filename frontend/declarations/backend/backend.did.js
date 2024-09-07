@@ -7,7 +7,7 @@ export const idlFactory = ({ IDL }) => {
     'timestamp' : Time,
   });
   return IDL.Service({
-    'createTab' : IDL.Func([IDL.Text, IDL.Opt(IDL.Text)], [IDL.Nat], []),
+    'createTab' : IDL.Func([IDL.Text, IDL.Text], [IDL.Nat], []),
     'deleteTab' : IDL.Func([IDL.Nat], [IDL.Bool], []),
     'getTabs' : IDL.Func([], [IDL.Vec(Tab)], ['query']),
     'updateTabContent' : IDL.Func([IDL.Nat, IDL.Text], [IDL.Bool], []),

@@ -10,7 +10,7 @@ export interface Tab {
 }
 export type Time = bigint;
 export interface _SERVICE {
-  'createTab' : ActorMethod<[string, [] | [string]], bigint>,
+  'createTab' : ActorMethod<[string, string], bigint>,
   'deleteTab' : ActorMethod<[bigint], boolean>,
   'getTabs' : ActorMethod<[], Array<Tab>>,
   'updateTabContent' : ActorMethod<[bigint, string], boolean>,

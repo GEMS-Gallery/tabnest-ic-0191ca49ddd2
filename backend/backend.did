@@ -7,7 +7,7 @@ type Tab =
    timestamp: Time;
  };
 service : {
-  createTab: (text, opt text) -> (nat);
+  createTab: (text, text) -> (nat);
   deleteTab: (nat) -> (bool);
   getTabs: () -> (vec Tab) query;
   updateTabContent: (nat, text) -> (bool);
