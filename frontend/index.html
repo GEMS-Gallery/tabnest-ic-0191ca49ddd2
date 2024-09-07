@@ -1,13 +1,192 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Whimsical Homes</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minimalist Trading App</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.1/chart.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #ffffff;
+            color: #333333;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .chart-container {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+        .sidebar {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        h1, h2 {
+            color: #000000;
+            font-weight: 500;
+        }
+        .stock-list {
+            list-style-type: none;
+            padding: 0;
+        }
+        .stock-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .buy-sell {
+            margin-top: 20px;
+        }
+        input, select, button {
+            margin: 10px 0;
+            padding: 10px;
+            width: 100%;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #000000;
+            color: #ffffff;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #333333;
+        }
+        #stockChart {
+            max-height: 300px;
+        }
+        @media (min-width: 768px) {
+            .container {
+                flex-direction: row;
+                justify-content: space-between;
+            }
+            .chart-container {
+                width: 65%;
+                margin-bottom: 0;
+            }
+            .sidebar {
+                width: 30%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="chart-container">
+            <h1>Market Overview</h1>
+            <canvas id="stockChart"></canvas>
+        </div>
+        <div class="sidebar">
+            <h2>Watchlist</h2>
+            <ul class="stock-list" id="stockList"></ul>
+            <div class="buy-sell">
+                <h2>Trade</h2>
+                <select id="stockSelect"></select>
+                <input type="number" id="quantity" placeholder="Quantity">
+                <button onclick="buy()">Buy</button>
+                <button onclick="sell()" style="background-color: #ffffff; color: #000000; border: 1px solid #000000;">Sell</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const stocks = [
+            { symbol: 'AAPL', name: 'Apple Inc.', price: 150.25 },
+            { symbol: 'GOOGL', name: 'Alphabet Inc.', price: 2750.80 },
+            { symbol: 'MSFT', name: 'Microsoft Corporation', price: 305.15 },
+            { symbol: 'AMZN', name: 'Amazon.com Inc.', price: 3380.50 },
+            { symbol: 'META', name: 'Meta Platforms Inc.', price: 330.75 }
+        ];
+
+        function updateStockList() {
+            const stockList = document.getElementById('stockList');
+            const stockSelect = document.getElementById('stockSelect');
+            stockList.innerHTML = '';
+            stockSelect.innerHTML = '';
+            
+            stocks.forEach(stock => {
+                const li = document.createElement('li');
+                li.className = 'stock-item';
+                li.innerHTML = `
+                    <span>${stock.symbol}</span>
+                    <span>$${stock.price.toFixed(2)}</span>
+                `;
+                stockList.appendChild(li);
+
+                const option = document.createElement('option');
+                option.value = stock.symbol;
+                option.textContent = stock.symbol;
+                stockSelect.appendChild(option);
+            });
+        }
+
+        function initChart() {
+            const ctx = document.getElementById('stockChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Market Index',
+                        data: [120, 130, 125, 135, 140, 150],
+                        borderColor: '#000000',
+                        backgroundColor: 'rgba(0, 0, 0, 0.1)',
+                        tension: 0.1,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            grid: {
+                                color: '#f0f0f0'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: '#f0f0f0'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+
+        function buy() {
+            alert('Buy order placed!');
+        }
+
+        function sell() {
+            alert('Sell order placed!');
+        }
+
+        updateStockList();
+        initChart();
+    </script>
+</body>
 </html>
