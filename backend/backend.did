@@ -1,6 +1,7 @@
 type Time = int;
 type Tab = 
  record {
+   attachedTo: opt nat;
    content: text;
    id: nat;
    position: record {
@@ -21,9 +22,33 @@ service : {
                           }, record {
                                nat;
                                nat;
-                             }) -> (nat);
+                             }, opt nat) -> (nat);
+  deleteDocument: (nat) -> (bool);
   deleteTab: (nat) -> (bool);
+  getDocumentContent: (nat) -> (opt blob);
+  getDocuments: () ->
+   (vec record {
+          nat;
+          text;
+          text;
+          record {
+            nat;
+            nat;
+          };
+          record {
+            nat;
+            nat;
+          };
+        }) query;
   getTabs: () -> (vec Tab) query;
+  updateDocumentPosition: (nat, record {
+                                  nat;
+                                  nat;
+                                }) -> (bool);
+  updateDocumentSize: (nat, record {
+                              nat;
+                              nat;
+                            }) -> (bool);
   updateTabContent: (nat, text) -> (bool);
   updateTabPosition: (nat, record {
                              nat;
@@ -33,4 +58,11 @@ service : {
                          nat;
                          nat;
                        }) -> (bool);
+  uploadDocument: (text, text, blob, record {
+                                       nat;
+                                       nat;
+                                     }, record {
+                                          nat;
+                                          nat;
+                                        }) -> (nat);
 }

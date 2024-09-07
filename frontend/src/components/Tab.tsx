@@ -3,6 +3,7 @@ import { Paper, Typography, IconButton, Box } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import MinimizeIcon from '@mui/icons-material/Minimize';
 import MaximizeIcon from '@mui/icons-material/Maximize';
+import AttachFileIcon from '@mui/icons-material/AttachFile';
 import { Editor } from 'react-draft-wysiwyg';
 import { EditorState, convertToRaw, convertFromRaw, ContentState } from 'draft-js';
 import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css';
@@ -13,13 +14,15 @@ interface TabProps {
   content: string;
   position: [number, number];
   size: [number, number];
+  attachedTo: number | null;
   onUpdate: (id: number, content: string) => void;
   onUpdatePosition: (id: number, position: [number, number]) => void;
   onUpdateSize: (id: number, size: [number, number]) => void;
   onDelete: (id: number) => void;
+  onAttach: (docId: number) => void;
 }
 
-const Tab: React.FC<TabProps> = ({ id, tabType, content, position, size, onUpdate, onUpdatePosition, onUpdateSize, onDelete }) => {
+const Tab: React.FC<TabProps> = ({ id, tabType, content, position, size, attachedTo, onUpdate, onUpdatePosition, onUpdateSize, onDelete, onAttach }) => {
   const [isMinimized, setIsMinimized] = useState(false);
   const [isMaximized, setIsMaximized] = useState(false);
   const [editorState, setEditorState] = useState(() => {
@@ -121,6 +124,11 @@ const Tab: React.FC<TabProps> = ({ id, tabType, content, position, size, onUpdat
       >
         <Typography variant="subtitle1">{tabType}</Typography>
         <Box>
+          {!attachedTo && (
+            <IconButton size="small" onClick={() => onAttach(id)}>
+              <AttachFileIcon />
+            </IconButton>
+          )}
           <IconButton size="small" onClick={toggleMinimize}>
             <MinimizeIcon />
           </IconButton>
