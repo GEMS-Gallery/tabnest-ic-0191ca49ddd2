@@ -7,12 +7,13 @@ import HashMap "mo:base/HashMap";
 import Nat "mo:base/Nat";
 import Text "mo:base/Text";
 import Time "mo:base/Time";
+import Option "mo:base/Option";
 
 actor {
   type Tab = {
     id : Nat;
     tabType : Text;
-    content : ?Text;
+    content : Text;
     timestamp : Time.Time;
   };
 
@@ -25,7 +26,7 @@ actor {
     let newTab : Tab = {
       id = id;
       tabType = tabType;
-      content = content;
+      content = Option.get(content, "");
       timestamp = Time.now();
     };
     tabs.put(id, newTab);
@@ -39,7 +40,7 @@ actor {
         let updatedTab : Tab = {
           id = tab.id;
           tabType = tab.tabType;
-          content = ?content;
+          content = content;
           timestamp = Time.now();
         };
         tabs.put(id, updatedTab);

@@ -4,7 +4,7 @@ import type { IDL } from '@dfinity/candid';
 
 export interface Tab {
   'id' : bigint,
-  'content' : [] | [string],
+  'content' : string,
   'tabType' : string,
   'timestamp' : Time,
 }

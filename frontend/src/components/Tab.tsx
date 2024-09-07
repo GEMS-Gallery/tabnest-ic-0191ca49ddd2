@@ -4,13 +4,13 @@ import CloseIcon from '@mui/icons-material/Close';
 import MinimizeIcon from '@mui/icons-material/Minimize';
 import MaximizeIcon from '@mui/icons-material/Maximize';
 import { Editor } from 'react-draft-wysiwyg';
-import { EditorState, convertToRaw, convertFromRaw } from 'draft-js';
+import { EditorState, convertToRaw, convertFromRaw, ContentState } from 'draft-js';
 import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css';
 
 interface TabProps {
   id: number;
   tabType: string;
-  content: string | null;
+  content: string;
   onUpdate: (id: number, content: string) => void;
   onDelete: (id: number) => void;
 }
@@ -20,7 +20,11 @@ const Tab: React.FC<TabProps> = ({ id, tabType, content, onUpdate, onDelete }) =
   const [isMaximized, setIsMaximized] = useState(false);
   const [editorState, setEditorState] = useState(() => {
     if (content) {
-      return EditorState.createWithContent(convertFromRaw(JSON.parse(content)));
+      try {
+        return EditorState.createWithContent(convertFromRaw(JSON.parse(content)));
+      } catch {
+        return EditorState.createWithContent(ContentState.createFromText(content));
+      }
     }
     return EditorState.createEmpty();
   });

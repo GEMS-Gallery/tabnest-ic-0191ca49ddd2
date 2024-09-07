@@ -1,7 +1,7 @@
 type Time = int;
 type Tab = 
  record {
-   content: opt text;
+   content: text;
    id: nat;
    tabType: text;
    timestamp: Time;

@@ -7,7 +7,7 @@ import Tab from './components/Tab';
 interface TabData {
   id: number;
   tabType: string;
-  content: string | null;
+  content: string;
   timestamp: bigint;
 }
 
@@ -32,8 +32,8 @@ const App: React.FC = () => {
 
   const createTab = async (tabType: string) => {
     try {
-      const newTabId = await backend.createTab(tabType, null);
-      const newTab: TabData = { id: Number(newTabId), tabType, content: null, timestamp: BigInt(Date.now()) };
+      const newTabId = await backend.createTab(tabType, "");
+      const newTab: TabData = { id: Number(newTabId), tabType, content: "", timestamp: BigInt(Date.now()) };
       setTabs([...tabs, newTab]);
     } catch (error) {
       console.error('Error creating tab:', error);

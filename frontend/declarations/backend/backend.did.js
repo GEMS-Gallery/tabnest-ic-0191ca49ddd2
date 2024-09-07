@@ -2,7 +2,7 @@ export const idlFactory = ({ IDL }) => {
   const Time = IDL.Int;
   const Tab = IDL.Record({
     'id' : IDL.Nat,
-    'content' : IDL.Opt(IDL.Text),
+    'content' : IDL.Text,
     'tabType' : IDL.Text,
     'timestamp' : Time,
   });
