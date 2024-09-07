@@ -3,12 +3,34 @@ type Tab =
  record {
    content: text;
    id: nat;
+   position: record {
+               nat;
+               nat;
+             };
+   size: record {
+           nat;
+           nat;
+         };
    tabType: text;
    timestamp: Time;
  };
 service : {
-  createTab: (text, text) -> (nat);
+  createTab: (text, text, record {
+                            nat;
+                            nat;
+                          }, record {
+                               nat;
+                               nat;
+                             }) -> (nat);
   deleteTab: (nat) -> (bool);
   getTabs: () -> (vec Tab) query;
   updateTabContent: (nat, text) -> (bool);
+  updateTabPosition: (nat, record {
+                             nat;
+                             nat;
+                           }) -> (bool);
+  updateTabSize: (nat, record {
+                         nat;
+                         nat;
+                       }) -> (bool);
 }

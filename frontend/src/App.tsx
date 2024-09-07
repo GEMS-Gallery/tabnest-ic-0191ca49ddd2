@@ -9,6 +9,8 @@ interface TabData {
   tabType: string;
   content: string;
   timestamp: bigint;
+  position: [number, number];
+  size: [number, number];
 }
 
 const App: React.FC = () => {
@@ -32,8 +34,15 @@ const App: React.FC = () => {
 
   const createTab = async (tabType: string) => {
     try {
-      const newTabId = await backend.createTab(tabType, "");
-      const newTab: TabData = { id: Number(newTabId), tabType, content: "", timestamp: BigInt(Date.now()) };
+      const newTabId = await backend.createTab(tabType, "", [0, 0], [300, 200]);
+      const newTab: TabData = { 
+        id: Number(newTabId), 
+        tabType, 
+        content: "", 
+        timestamp: BigInt(Date.now()),
+        position: [0, 0],
+        size: [300, 200]
+      };
       setTabs([...tabs, newTab]);
     } catch (error) {
       console.error('Error creating tab:', error);
@@ -46,6 +55,24 @@ const App: React.FC = () => {
       setTabs(tabs.map(tab => tab.id === id ? { ...tab, content } : tab));
     } catch (error) {
       console.error('Error updating tab content:', error);
+    }
+  };
+
+  const updateTabPosition = async (id: number, position: [number, number]) => {
+    try {
+      await backend.updateTabPosition(id, position);
+      setTabs(tabs.map(tab => tab.id === id ? { ...tab, position } : tab));
+    } catch (error) {
+      console.error('Error updating tab position:', error);
+    }
+  };
+
+  const updateTabSize = async (id: number, size: [number, number]) => {
+    try {
+      await backend.updateTabSize(id, size);
+      setTabs(tabs.map(tab => tab.id === id ? { ...tab, size } : tab));
+    } catch (error) {
+      console.error('Error updating tab size:', error);
     }
   };
 
@@ -85,14 +112,18 @@ const App: React.FC = () => {
           Add Note
         </Button>
       </Box>
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', padding: 2, paddingTop: 8 }}>
+      <Box sx={{ position: 'relative', width: '100%', height: 'calc(100% - 60px)', marginTop: '60px' }}>
         {tabs.map((tab) => (
           <Tab
             key={tab.id}
             id={tab.id}
             tabType={tab.tabType}
             content={tab.content}
+            position={tab.position}
+            size={tab.size}
             onUpdate={updateTabContent}
+            onUpdatePosition={updateTabPosition}
+            onUpdateSize={updateTabSize}
             onDelete={deleteTab}
           />
         ))}

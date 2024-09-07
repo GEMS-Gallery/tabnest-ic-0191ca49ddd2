@@ -14,12 +14,14 @@ actor {
     tabType : Text;
     content : Text;
     timestamp : Time.Time;
+    position : (Nat, Nat);
+    size : (Nat, Nat);
   };
 
   stable var nextTabId : Nat = 0;
   let tabs = HashMap.HashMap<Nat, Tab>(10, Nat.equal, Nat.hash);
 
-  public func createTab(tabType : Text, content : Text) : async Nat {
+  public func createTab(tabType : Text, content : Text, position : (Nat, Nat), size : (Nat, Nat)) : async Nat {
     let id = nextTabId;
     nextTabId += 1;
     let newTab : Tab = {
@@ -27,6 +29,8 @@ actor {
       tabType = tabType;
       content = content;
       timestamp = Time.now();
+      position = position;
+      size = size;
     };
     tabs.put(id, newTab);
     id
@@ -41,6 +45,44 @@ actor {
           tabType = tab.tabType;
           content = content;
           timestamp = Time.now();
+          position = tab.position;
+          size = tab.size;
+        };
+        tabs.put(id, updatedTab);
+        true
+      };
+    }
+  };
+
+  public func updateTabPosition(id : Nat, position : (Nat, Nat)) : async Bool {
+    switch (tabs.get(id)) {
+      case (null) { false };
+      case (?tab) {
+        let updatedTab : Tab = {
+          id = tab.id;
+          tabType = tab.tabType;
+          content = tab.content;
+          timestamp = Time.now();
+          position = position;
+          size = tab.size;
+        };
+        tabs.put(id, updatedTab);
+        true
+      };
+    }
+  };
+
+  public func updateTabSize(id : Nat, size : (Nat, Nat)) : async Bool {
+    switch (tabs.get(id)) {
+      case (null) { false };
+      case (?tab) {
+        let updatedTab : Tab = {
+          id = tab.id;
+          tabType = tab.tabType;
+          content = tab.content;
+          timestamp = Time.now();
+          position = tab.position;
+          size = size;
         };
         tabs.put(id, updatedTab);
         true
