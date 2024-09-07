@@ -1,0 +1,14 @@
+type Time = int;
+type Tab = 
+ record {
+   content: opt text;
+   id: nat;
+   tabType: text;
+   timestamp: Time;
+ };
+service : {
+  createTab: (text, opt text) -> (nat);
+  deleteTab: (nat) -> (bool);
+  getTabs: () -> (vec Tab) query;
+  updateTabContent: (nat, text) -> (bool);
+}
