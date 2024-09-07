@@ -3,190 +3,274 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Minimalist Trading App</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.1/chart.min.js"></script>
+    <title>Enhanced Twitter Clone</title>
     <style>
+        :root {
+            --primary-color: #1da1f2;
+            --secondary-color: #14171a;
+            --background-color: #f5f8fa;
+            --border-color: #e1e8ed;
+        }
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #ffffff;
-            color: #333333;
+            background-color: var(--background-color);
+            color: var(--secondary-color);
         }
         .container {
-            display: flex;
-            flex-direction: column;
-            max-width: 1200px;
+            max-width: 600px;
             margin: 0 auto;
             padding: 20px;
         }
-        .chart-container {
-            background-color: #ffffff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            margin-bottom: 20px;
-        }
-        .sidebar {
-            background-color: #ffffff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-        }
-        h1, h2 {
-            color: #000000;
-            font-weight: 500;
-        }
-        .stock-list {
-            list-style-type: none;
-            padding: 0;
-        }
-        .stock-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 15px 0;
-            border-bottom: 1px solid #f0f0f0;
-        }
-        .buy-sell {
-            margin-top: 20px;
-        }
-        input, select, button {
-            margin: 10px 0;
+        .header {
+            background-color: var(--primary-color);
+            color: white;
             padding: 10px;
-            width: 100%;
-            border: 1px solid #e0e0e0;
-            border-radius: 4px;
-            box-sizing: border-box;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
-        button {
-            background-color: #000000;
-            color: #ffffff;
+        .tweet-form {
+            background-color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+        }
+        .tweet-input {
+            width: 100%;
+            height: 100px;
+            resize: none;
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        .tweet-button {
+            background-color: var(--primary-color);
+            color: white;
             border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
             cursor: pointer;
             font-weight: bold;
-            transition: background-color 0.3s ease;
+            float: right;
         }
-        button:hover {
-            background-color: #333333;
+        .tweet-list {
+            background-color: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
         }
-        #stockChart {
-            max-height: 300px;
+        .tweet {
+            border-bottom: 1px solid var(--border-color);
+            padding: 15px 0;
         }
-        @media (min-width: 768px) {
-            .container {
-                flex-direction: row;
-                justify-content: space-between;
-            }
-            .chart-container {
-                width: 65%;
-                margin-bottom: 0;
-            }
-            .sidebar {
-                width: 30%;
-            }
+        .tweet:last-child {
+            border-bottom: none;
+        }
+        .tweet-author {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .tweet-content {
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+        .tweet-actions {
+            display: flex;
+            justify-content: space-between;
+        }
+        .tweet-action {
+            color: #657786;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+        }
+        .tweet-action:hover {
+            color: var(--primary-color);
+        }
+        .tweet-action span {
+            margin-left: 5px;
+        }
+        .char-count {
+            float: left;
+            color: #657786;
+        }
+        .profile-section {
+            background-color: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+        }
+        .profile-info {
+            display: flex;
+            align-items: center;
+        }
+        .profile-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            margin-right: 15px;
+        }
+        .profile-name {
+            font-weight: bold;
+            font-size: 18px;
+        }
+        .profile-handle {
+            color: #657786;
+        }
+        .profile-stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 15px;
+        }
+        .stat {
+            text-align: center;
+        }
+        .stat-value {
+            font-weight: bold;
+            font-size: 18px;
+        }
+        .stat-label {
+            color: #657786;
+            font-size: 14px;
         }
     </style>
 </head>
 <body>
+    <div class="header">
+        <h1>Enhanced Twitter Clone</h1>
+    </div>
     <div class="container">
-        <div class="chart-container">
-            <h1>Market Overview</h1>
-            <canvas id="stockChart"></canvas>
-        </div>
-        <div class="sidebar">
-            <h2>Watchlist</h2>
-            <ul class="stock-list" id="stockList"></ul>
-            <div class="buy-sell">
-                <h2>Trade</h2>
-                <select id="stockSelect"></select>
-                <input type="number" id="quantity" placeholder="Quantity">
-                <button onclick="buy()">Buy</button>
-                <button onclick="sell()" style="background-color: #ffffff; color: #000000; border: 1px solid #000000;">Sell</button>
+        <div class="profile-section">
+            <div class="profile-info">
+                <img src="/api/placeholder/50/50" alt="Profile Avatar" class="profile-avatar">
+                <div>
+                    <div class="profile-name">John Doe</div>
+                    <div class="profile-handle">@johndoe</div>
+                </div>
             </div>
+            <div class="profile-stats">
+                <div class="stat">
+                    <div class="stat-value">120</div>
+                    <div class="stat-label">Tweets</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">500</div>
+                    <div class="stat-label">Following</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">1.5K</div>
+                    <div class="stat-label">Followers</div>
+                </div>
+            </div>
+        </div>
+        <div class="tweet-form">
+            <textarea id="tweet-input" class="tweet-input" placeholder="What's happening?" maxlength="280"></textarea>
+            <div class="char-count">280</div>
+            <button id="tweet-button" class="tweet-button">Tweet</button>
+            <div style="clear: both;"></div>
+        </div>
+        <div id="tweet-list" class="tweet-list">
+            <!-- Tweets will be added here dynamically -->
         </div>
     </div>
 
     <script>
-        const stocks = [
-            { symbol: 'AAPL', name: 'Apple Inc.', price: 150.25 },
-            { symbol: 'GOOGL', name: 'Alphabet Inc.', price: 2750.80 },
-            { symbol: 'MSFT', name: 'Microsoft Corporation', price: 305.15 },
-            { symbol: 'AMZN', name: 'Amazon.com Inc.', price: 3380.50 },
-            { symbol: 'META', name: 'Meta Platforms Inc.', price: 330.75 }
-        ];
+        const tweetInput = document.getElementById('tweet-input');
+        const tweetButton = document.getElementById('tweet-button');
+        const tweetList = document.getElementById('tweet-list');
+        const charCount = document.querySelector('.char-count');
 
-        function updateStockList() {
-            const stockList = document.getElementById('stockList');
-            const stockSelect = document.getElementById('stockSelect');
-            stockList.innerHTML = '';
-            stockSelect.innerHTML = '';
-            
-            stocks.forEach(stock => {
-                const li = document.createElement('li');
-                li.className = 'stock-item';
-                li.innerHTML = `
-                    <span>${stock.symbol}</span>
-                    <span>$${stock.price.toFixed(2)}</span>
+        let tweets = [];
+
+        function createTweet(content) {
+            const tweet = {
+                id: Date.now(),
+                author: 'John Doe',
+                handle: '@johndoe',
+                content: content,
+                likes: 0,
+                retweets: 0,
+                comments: 0,
+                timestamp: new Date().toLocaleString()
+            };
+            tweets.unshift(tweet);
+            renderTweets();
+            updateProfileStats();
+        }
+
+        function renderTweets() {
+            tweetList.innerHTML = '';
+            tweets.forEach(tweet => {
+                const tweetElement = document.createElement('div');
+                tweetElement.className = 'tweet';
+                tweetElement.innerHTML = `
+                    <div class="tweet-author">${tweet.author} <span style="color: #657786;">${tweet.handle} · ${tweet.timestamp}</span></div>
+                    <div class="tweet-content">${tweet.content}</div>
+                    <div class="tweet-actions">
+                        <span class="tweet-action comment-action" data-id="${tweet.id}">💬 <span>${tweet.comments}</span></span>
+                        <span class="tweet-action retweet-action" data-id="${tweet.id}">🔁 <span>${tweet.retweets}</span></span>
+                        <span class="tweet-action like-action" data-id="${tweet.id}">❤️ <span>${tweet.likes}</span></span>
+                        <span class="tweet-action delete-action" data-id="${tweet.id}">🗑️</span>
+                    </div>
                 `;
-                stockList.appendChild(li);
+                tweetList.appendChild(tweetElement);
+            });
 
-                const option = document.createElement('option');
-                option.value = stock.symbol;
-                option.textContent = stock.symbol;
-                stockSelect.appendChild(option);
+            // Add event listeners for tweet actions
+            document.querySelectorAll('.tweet-action').forEach(action => {
+                action.addEventListener('click', handleTweetAction);
             });
         }
 
-        function initChart() {
-            const ctx = document.getElementById('stockChart').getContext('2d');
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-                    datasets: [{
-                        label: 'Market Index',
-                        data: [120, 130, 125, 135, 140, 150],
-                        borderColor: '#000000',
-                        backgroundColor: 'rgba(0, 0, 0, 0.1)',
-                        tension: 0.1,
-                        fill: true
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: false,
-                            grid: {
-                                color: '#f0f0f0'
-                            }
-                        },
-                        x: {
-                            grid: {
-                                color: '#f0f0f0'
-                            }
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
-                    }
+        function handleTweetAction(event) {
+            const action = event.currentTarget;
+            const tweetId = parseInt(action.getAttribute('data-id'));
+            const tweet = tweets.find(t => t.id === tweetId);
+            
+            if (tweet) {
+                if (action.classList.contains('like-action')) {
+                    tweet.likes++;
+                } else if (action.classList.contains('retweet-action')) {
+                    tweet.retweets++;
+                } else if (action.classList.contains('comment-action')) {
+                    tweet.comments++;
+                } else if (action.classList.contains('delete-action')) {
+                    tweets = tweets.filter(t => t.id !== tweetId);
                 }
-            });
+                renderTweets();
+                updateProfileStats();
+            }
         }
 
-        function buy() {
-            alert('Buy order placed!');
+        function updateProfileStats() {
+            document.querySelector('.profile-stats .stat-value').textContent = tweets.length;
         }
 
-        function sell() {
-            alert('Sell order placed!');
-        }
+        tweetButton.addEventListener('click', () => {
+            const content = tweetInput.value.trim();
+            if (content) {
+                createTweet(content);
+                tweetInput.value = '';
+                charCount.textContent = '280';
+            }
+        });
 
-        updateStockList();
-        initChart();
+        tweetInput.addEventListener('input', () => {
+            const remainingChars = 280 - tweetInput.value.length;
+            charCount.textContent = remainingChars;
+            charCount.style.color = remainingChars < 20 ? 'red' : '#657786';
+        });
+
+        // Initial tweets
+        createTweet("Welcome to the enhanced Twitter clone!");
+        createTweet("This version includes profile info, tweet actions, and more!");
     </script>
 </body>
 </html>
