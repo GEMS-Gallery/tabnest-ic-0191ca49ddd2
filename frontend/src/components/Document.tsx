@@ -92,7 +92,7 @@ const Document: React.FC<DocumentProps> = ({ id, fileName, fileType, position, s
     if (fileType === 'application/pdf') {
       const blob = new Blob([content], { type: 'application/pdf' });
       const url = URL.createObjectURL(blob);
-      return <iframe src={url} width="100%" height="100%" />
+      return <iframe src={url} width="100%" height="100%" />;
     }
 
     return <Typography>Unsupported file type</Typography>;

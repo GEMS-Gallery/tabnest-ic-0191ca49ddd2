@@ -60,7 +60,7 @@ const App: React.FC = () => {
     }
   };
 
-  const createTab = async (tabType: string, attachedTo: number | null = null) => {
+  const createTab = async (tabType: string, attachedTo: number | undefined = undefined) => {
     try {
       const newTabId = await backend.createTab(tabType, "", [0, 0], [300, 200], attachedTo);
       const newTab: TabData = { 
@@ -70,7 +70,7 @@ const App: React.FC = () => {
         timestamp: BigInt(Date.now()),
         position: [0, 0],
         size: [300, 200],
-        attachedTo
+        attachedTo: attachedTo ?? null
       };
       setTabs([...tabs, newTab]);
     } catch (error) {
