@@ -1,81 +1,29 @@
 export const idlFactory = ({ IDL }) => {
+  const Profile = IDL.Record({
+    'bio' : IDL.Text,
+    'username' : IDL.Text,
+    'followersCount' : IDL.Nat,
+    'followingCount' : IDL.Nat,
+  });
   const Time = IDL.Int;
-  const Tab = IDL.Record({
+  const Tweet = IDL.Record({
     'id' : IDL.Nat,
+    'retweets' : IDL.Nat,
     'content' : IDL.Text,
-    'tabType' : IDL.Text,
-    'size' : IDL.Tuple(IDL.Nat, IDL.Nat),
+    'author' : IDL.Principal,
+    'likes' : IDL.Nat,
     'timestamp' : Time,
-    'position' : IDL.Tuple(IDL.Nat, IDL.Nat),
-    'attachedTo' : IDL.Opt(IDL.Nat),
+    'comments' : IDL.Nat,
   });
   return IDL.Service({
-    'createTab' : IDL.Func(
-        [
-          IDL.Text,
-          IDL.Text,
-          IDL.Tuple(IDL.Nat, IDL.Nat),
-          IDL.Tuple(IDL.Nat, IDL.Nat),
-          IDL.Opt(IDL.Nat),
-        ],
-        [IDL.Nat],
-        [],
-      ),
-    'deleteDocument' : IDL.Func([IDL.Nat], [IDL.Bool], []),
-    'deleteTab' : IDL.Func([IDL.Nat], [IDL.Bool], []),
-    'getDocumentContent' : IDL.Func(
-        [IDL.Nat],
-        [IDL.Opt(IDL.Vec(IDL.Nat8))],
-        [],
-      ),
-    'getDocuments' : IDL.Func(
-        [],
-        [
-          IDL.Vec(
-            IDL.Tuple(
-              IDL.Nat,
-              IDL.Text,
-              IDL.Text,
-              IDL.Tuple(IDL.Nat, IDL.Nat),
-              IDL.Tuple(IDL.Nat, IDL.Nat),
-            )
-          ),
-        ],
-        ['query'],
-      ),
-    'getTabs' : IDL.Func([], [IDL.Vec(Tab)], ['query']),
-    'updateDocumentPosition' : IDL.Func(
-        [IDL.Nat, IDL.Tuple(IDL.Nat, IDL.Nat)],
-        [IDL.Bool],
-        [],
-      ),
-    'updateDocumentSize' : IDL.Func(
-        [IDL.Nat, IDL.Tuple(IDL.Nat, IDL.Nat)],
-        [IDL.Bool],
-        [],
-      ),
-    'updateTabContent' : IDL.Func([IDL.Nat, IDL.Text], [IDL.Bool], []),
-    'updateTabPosition' : IDL.Func(
-        [IDL.Nat, IDL.Tuple(IDL.Nat, IDL.Nat)],
-        [IDL.Bool],
-        [],
-      ),
-    'updateTabSize' : IDL.Func(
-        [IDL.Nat, IDL.Tuple(IDL.Nat, IDL.Nat)],
-        [IDL.Bool],
-        [],
-      ),
-    'uploadDocument' : IDL.Func(
-        [
-          IDL.Text,
-          IDL.Text,
-          IDL.Vec(IDL.Nat8),
-          IDL.Tuple(IDL.Nat, IDL.Nat),
-          IDL.Tuple(IDL.Nat, IDL.Nat),
-        ],
-        [IDL.Nat],
-        [],
-      ),
+    'comment' : IDL.Func([IDL.Nat], [IDL.Bool], []),
+    'createProfile' : IDL.Func([IDL.Text, IDL.Text], [IDL.Bool], []),
+    'createTweet' : IDL.Func([IDL.Text], [IDL.Nat], []),
+    'getProfile' : IDL.Func([IDL.Principal], [IDL.Opt(Profile)], ['query']),
+    'getTweets' : IDL.Func([], [IDL.Vec(Tweet)], ['query']),
+    'likeTweet' : IDL.Func([IDL.Nat], [IDL.Bool], []),
+    'retweet' : IDL.Func([IDL.Nat], [IDL.Bool], []),
+    'updateProfile' : IDL.Func([IDL.Text, IDL.Text], [IDL.Bool], []),
   });
 };
 export const init = ({ IDL }) => { return []; };

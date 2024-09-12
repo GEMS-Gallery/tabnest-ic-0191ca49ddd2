@@ -140,6 +140,20 @@
             color: #657786;
             font-size: 14px;
         }
+        .auth-buttons {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .auth-button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            margin: 0 10px;
+        }
     </style>
 </head>
 <body>
@@ -147,30 +161,34 @@
         <h1>Enhanced Twitter Clone</h1>
     </div>
     <div class="container">
-        <div class="profile-section">
+        <div class="auth-buttons">
+            <button id="loginButton" class="auth-button">Login</button>
+            <button id="logoutButton" class="auth-button" style="display: none;">Logout</button>
+        </div>
+        <div id="profileSection" class="profile-section" style="display: none;">
             <div class="profile-info">
                 <img src="/api/placeholder/50/50" alt="Profile Avatar" class="profile-avatar">
                 <div>
-                    <div class="profile-name">John Doe</div>
-                    <div class="profile-handle">@johndoe</div>
+                    <div id="profileName" class="profile-name"></div>
+                    <div id="profileHandle" class="profile-handle"></div>
                 </div>
             </div>
             <div class="profile-stats">
                 <div class="stat">
-                    <div class="stat-value">120</div>
+                    <div id="tweetCount" class="stat-value">0</div>
                     <div class="stat-label">Tweets</div>
                 </div>
                 <div class="stat">
-                    <div class="stat-value">500</div>
+                    <div class="stat-value">0</div>
                     <div class="stat-label">Following</div>
                 </div>
                 <div class="stat">
-                    <div class="stat-value">1.5K</div>
+                    <div class="stat-value">0</div>
                     <div class="stat-label">Followers</div>
                 </div>
             </div>
         </div>
-        <div class="tweet-form">
+        <div id="tweetForm" class="tweet-form" style="display: none;">
             <textarea id="tweet-input" class="tweet-input" placeholder="What's happening?" maxlength="280"></textarea>
             <div class="char-count">280</div>
             <button id="tweet-button" class="tweet-button">Tweet</button>
@@ -181,28 +199,103 @@
         </div>
     </div>
 
+    <script src="https://unpkg.com/@dfinity/agent/lib/index.js"></script>
+    <script src="https://unpkg.com/@dfinity/auth-client/lib/index.js"></script>
     <script>
+        let authClient;
+        let actor;
+        let principal;
+        let tweets = [];
+
         const tweetInput = document.getElementById('tweet-input');
         const tweetButton = document.getElementById('tweet-button');
         const tweetList = document.getElementById('tweet-list');
         const charCount = document.querySelector('.char-count');
+        const loginButton = document.getElementById('loginButton');
+        const logoutButton = document.getElementById('logoutButton');
+        const profileSection = document.getElementById('profileSection');
+        const tweetForm = document.getElementById('tweetForm');
+        const profileName = document.getElementById('profileName');
+        const profileHandle = document.getElementById('profileHandle');
+        const tweetCount = document.getElementById('tweetCount');
 
-        let tweets = [];
+        async function initAuth() {
+            authClient = await AuthClient.create();
+            const isAuthenticated = await authClient.isAuthenticated();
 
-        function createTweet(content) {
-            const tweet = {
-                id: Date.now(),
-                author: 'John Doe',
-                handle: '@johndoe',
-                content: content,
-                likes: 0,
-                retweets: 0,
-                comments: 0,
-                timestamp: new Date().toLocaleString()
-            };
-            tweets.unshift(tweet);
-            renderTweets();
-            updateProfileStats();
+            loginButton.onclick = login;
+            logoutButton.onclick = logout;
+
+            if (isAuthenticated) {
+                await handleAuthenticated();
+            }
+        }
+
+        async function login() {
+            authClient.login({
+                identityProvider: "https://identity.ic0.app/#authorize",
+                onSuccess: handleAuthenticated
+            });
+        }
+
+        async function logout() {
+            await authClient.logout();
+            loginButton.style.display = 'inline-block';
+            logoutButton.style.display = 'none';
+            profileSection.style.display = 'none';
+            tweetForm.style.display = 'none';
+            principal = null;
+            actor = null;
+        }
+
+        async function handleAuthenticated() {
+            loginButton.style.display = 'none';
+            logoutButton.style.display = 'inline-block';
+            profileSection.style.display = 'block';
+            tweetForm.style.display = 'block';
+
+            const identity = await authClient.getIdentity();
+            principal = identity.getPrincipal();
+
+            const canisterId = 'rrkah-fqaaa-aaaaa-aaaaq-cai'; // Replace with your actual canister ID
+            actor = await window.ic.agent.Actor.createActor(canisterId, {
+                agentOptions: {
+                    identity,
+                },
+            });
+
+            await loadProfile();
+            await loadTweets();
+        }
+
+        async function loadProfile() {
+            try {
+                const profile = await actor.getProfile(principal);
+                if (profile) {
+                    profileName.textContent = profile.username;
+                    profileHandle.textContent = `@${profile.username.toLowerCase()}`;
+                } else {
+                    // If profile doesn't exist, prompt user to create one
+                    const username = prompt("Please enter a username to create your profile:");
+                    if (username) {
+                        await actor.createProfile(username, "");
+                        profileName.textContent = username;
+                        profileHandle.textContent = `@${username.toLowerCase()}`;
+                    }
+                }
+            } catch (error) {
+                console.error("Error loading profile:", error);
+            }
+        }
+
+        async function loadTweets() {
+            try {
+                tweets = await actor.getTweets();
+                renderTweets();
+                updateTweetCount();
+            } catch (error) {
+                console.error("Error loading tweets:", error);
+            }
         }
 
         function renderTweets() {
@@ -211,13 +304,12 @@
                 const tweetElement = document.createElement('div');
                 tweetElement.className = 'tweet';
                 tweetElement.innerHTML = `
-                    <div class="tweet-author">${tweet.author} <span style="color: #657786;">${tweet.handle} · ${tweet.timestamp}</span></div>
+                    <div class="tweet-author">${tweet.author.toText()} <span style="color: #657786;">· ${new Date(Number(tweet.timestamp) / 1000000).toLocaleString()}</span></div>
                     <div class="tweet-content">${tweet.content}</div>
                     <div class="tweet-actions">
                         <span class="tweet-action comment-action" data-id="${tweet.id}">💬 <span>${tweet.comments}</span></span>
                         <span class="tweet-action retweet-action" data-id="${tweet.id}">🔁 <span>${tweet.retweets}</span></span>
                         <span class="tweet-action like-action" data-id="${tweet.id}">❤️ <span>${tweet.likes}</span></span>
-                        <span class="tweet-action delete-action" data-id="${tweet.id}">🗑️</span>
                     </div>
                 `;
                 tweetList.appendChild(tweetElement);
@@ -229,36 +321,36 @@
             });
         }
 
-        function handleTweetAction(event) {
+        async function handleTweetAction(event) {
             const action = event.currentTarget;
             const tweetId = parseInt(action.getAttribute('data-id'));
-            const tweet = tweets.find(t => t.id === tweetId);
             
-            if (tweet) {
-                if (action.classList.contains('like-action')) {
-                    tweet.likes++;
-                } else if (action.classList.contains('retweet-action')) {
-                    tweet.retweets++;
-                } else if (action.classList.contains('comment-action')) {
-                    tweet.comments++;
-                } else if (action.classList.contains('delete-action')) {
-                    tweets = tweets.filter(t => t.id !== tweetId);
-                }
-                renderTweets();
-                updateProfileStats();
+            if (action.classList.contains('like-action')) {
+                await actor.likeTweet(tweetId);
+            } else if (action.classList.contains('retweet-action')) {
+                await actor.retweet(tweetId);
+            } else if (action.classList.contains('comment-action')) {
+                await actor.comment(tweetId);
             }
+            
+            await loadTweets();
         }
 
-        function updateProfileStats() {
-            document.querySelector('.profile-stats .stat-value').textContent = tweets.length;
+        function updateTweetCount() {
+            tweetCount.textContent = tweets.filter(tweet => tweet.author.toText() === principal.toText()).length;
         }
 
-        tweetButton.addEventListener('click', () => {
+        tweetButton.addEventListener('click', async () => {
             const content = tweetInput.value.trim();
             if (content) {
-                createTweet(content);
-                tweetInput.value = '';
-                charCount.textContent = '280';
+                try {
+                    await actor.createTweet(content);
+                    tweetInput.value = '';
+                    charCount.textContent = '280';
+                    await loadTweets();
+                } catch (error) {
+                    console.error("Error creating tweet:", error);
+                }
             }
         });
 
@@ -268,9 +360,7 @@
             charCount.style.color = remainingChars < 20 ? 'red' : '#657786';
         });
 
-        // Initial tweets
-        createTweet("Welcome to the enhanced Twitter clone!");
-        createTweet("This version includes profile info, tweet actions, and more!");
+        initAuth();
     </script>
 </body>
 </html>

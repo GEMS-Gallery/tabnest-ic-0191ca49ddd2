@@ -1,68 +1,28 @@
-type Time = int;
-type Tab = 
+type Tweet = 
  record {
-   attachedTo: opt nat;
+   author: principal;
+   comments: nat;
    content: text;
    id: nat;
-   position: record {
-               nat;
-               nat;
-             };
-   size: record {
-           nat;
-           nat;
-         };
-   tabType: text;
+   likes: nat;
+   retweets: nat;
    timestamp: Time;
  };
+type Time = int;
+type Profile = 
+ record {
+   bio: text;
+   followersCount: nat;
+   followingCount: nat;
+   username: text;
+ };
 service : {
-  createTab: (text, text, record {
-                            nat;
-                            nat;
-                          }, record {
-                               nat;
-                               nat;
-                             }, opt nat) -> (nat);
-  deleteDocument: (nat) -> (bool);
-  deleteTab: (nat) -> (bool);
-  getDocumentContent: (nat) -> (opt blob);
-  getDocuments: () ->
-   (vec record {
-          nat;
-          text;
-          text;
-          record {
-            nat;
-            nat;
-          };
-          record {
-            nat;
-            nat;
-          };
-        }) query;
-  getTabs: () -> (vec Tab) query;
-  updateDocumentPosition: (nat, record {
-                                  nat;
-                                  nat;
-                                }) -> (bool);
-  updateDocumentSize: (nat, record {
-                              nat;
-                              nat;
-                            }) -> (bool);
-  updateTabContent: (nat, text) -> (bool);
-  updateTabPosition: (nat, record {
-                             nat;
-                             nat;
-                           }) -> (bool);
-  updateTabSize: (nat, record {
-                         nat;
-                         nat;
-                       }) -> (bool);
-  uploadDocument: (text, text, blob, record {
-                                       nat;
-                                       nat;
-                                     }, record {
-                                          nat;
-                                          nat;
-                                        }) -> (nat);
+  comment: (nat) -> (bool);
+  createProfile: (text, text) -> (bool);
+  createTweet: (text) -> (nat);
+  getProfile: (principal) -> (opt Profile) query;
+  getTweets: () -> (vec Tweet) query;
+  likeTweet: (nat) -> (bool);
+  retweet: (nat) -> (bool);
+  updateProfile: (text, text) -> (bool);
 }

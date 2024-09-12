@@ -1,197 +1,173 @@
 import Bool "mo:base/Bool";
 import Hash "mo:base/Hash";
-import Iter "mo:base/Iter";
 
 import Array "mo:base/Array";
-import Blob "mo:base/Blob";
 import HashMap "mo:base/HashMap";
 import Nat "mo:base/Nat";
 import Text "mo:base/Text";
 import Time "mo:base/Time";
+import Principal "mo:base/Principal";
 import Option "mo:base/Option";
 
 actor {
-  type Tab = {
-    id : Nat;
-    tabType : Text;
-    content : Text;
-    timestamp : Time.Time;
-    position : (Nat, Nat);
-    size : (Nat, Nat);
-    attachedTo : ?Nat;
+  type Tweet = {
+    id: Nat;
+    author: Principal;
+    content: Text;
+    timestamp: Time.Time;
+    likes: Nat;
+    retweets: Nat;
+    comments: Nat;
   };
 
-  type Document = {
-    id : Nat;
-    fileName : Text;
-    fileType : Text;
-    content : Blob;
-    timestamp : Time.Time;
-    position : (Nat, Nat);
-    size : (Nat, Nat);
+  type Profile = {
+    username: Text;
+    bio: Text;
+    followersCount: Nat;
+    followingCount: Nat;
   };
 
-  stable var nextTabId : Nat = 0;
-  stable var nextDocId : Nat = 0;
-  let tabs = HashMap.HashMap<Nat, Tab>(10, Nat.equal, Nat.hash);
-  let documents = HashMap.HashMap<Nat, Document>(10, Nat.equal, Nat.hash);
+  private stable var nextTweetId: Nat = 0;
+  private var tweets = HashMap.HashMap<Nat, Tweet>(0, Nat.equal, Nat.hash);
+  private var profiles = HashMap.HashMap<Principal, Profile>(0, Principal.equal, Principal.hash);
 
-  public func createTab(tabType : Text, content : Text, position : (Nat, Nat), size : (Nat, Nat), attachedTo : ?Nat) : async Nat {
-    let id = nextTabId;
-    nextTabId += 1;
-    let newTab : Tab = {
-      id = id;
-      tabType = tabType;
-      content = content;
-      timestamp = Time.now();
-      position = position;
-      size = size;
-      attachedTo = attachedTo;
-    };
-    tabs.put(id, newTab);
-    id
+  public shared(msg) func createProfile(username: Text, bio: Text) : async Bool {
+    let caller = msg.caller;
+    switch (profiles.get(caller)) {
+      case (?_) { false };
+      case null {
+        let newProfile: Profile = {
+          username = username;
+          bio = bio;
+          followersCount = 0;
+          followingCount = 0;
+        };
+        profiles.put(caller, newProfile);
+        true
+      };
+    }
   };
 
-  public func updateTabContent(id : Nat, content : Text) : async Bool {
-    switch (tabs.get(id)) {
-      case (null) { false };
-      case (?tab) {
-        let updatedTab : Tab = {
-          id = tab.id;
-          tabType = tab.tabType;
+  public query func getProfile(user: Principal) : async ?Profile {
+    profiles.get(user)
+  };
+
+  public shared(msg) func updateProfile(username: Text, bio: Text) : async Bool {
+    let caller = msg.caller;
+    switch (profiles.get(caller)) {
+      case (?profile) {
+        let updatedProfile: Profile = {
+          username = username;
+          bio = bio;
+          followersCount = profile.followersCount;
+          followingCount = profile.followingCount;
+        };
+        profiles.put(caller, updatedProfile);
+        true
+      };
+      case null { false };
+    }
+  };
+
+  public shared(msg) func createTweet(content: Text) : async Nat {
+    let caller = msg.caller;
+    switch (profiles.get(caller)) {
+      case (?_) {
+        let id = nextTweetId;
+        nextTweetId += 1;
+        let newTweet: Tweet = {
+          id = id;
+          author = caller;
           content = content;
           timestamp = Time.now();
-          position = tab.position;
-          size = tab.size;
-          attachedTo = tab.attachedTo;
+          likes = 0;
+          retweets = 0;
+          comments = 0;
         };
-        tabs.put(id, updatedTab);
-        true
+        tweets.put(id, newTweet);
+        id
+      };
+      case null {
+        // User doesn't have a profile, can't tweet
+        assert(false);
+        0
       };
     }
   };
 
-  public func updateTabPosition(id : Nat, position : (Nat, Nat)) : async Bool {
-    switch (tabs.get(id)) {
-      case (null) { false };
-      case (?tab) {
-        let updatedTab : Tab = {
-          id = tab.id;
-          tabType = tab.tabType;
-          content = tab.content;
-          timestamp = Time.now();
-          position = position;
-          size = tab.size;
-          attachedTo = tab.attachedTo;
+  public query func getTweets() : async [Tweet] {
+    Array.tabulate<Tweet>(tweets.size(), func (i: Nat) : Tweet {
+      switch (tweets.get(i)) {
+        case (?tweet) { tweet };
+        case null {
+          {
+            id = 0;
+            author = Principal.fromText("2vxsx-fae");
+            content = "";
+            timestamp = 0;
+            likes = 0;
+            retweets = 0;
+            comments = 0;
+          }
         };
-        tabs.put(id, updatedTab);
+      }
+    })
+  };
+
+  public shared(msg) func likeTweet(id: Nat) : async Bool {
+    switch (tweets.get(id)) {
+      case (?tweet) {
+        let updatedTweet: Tweet = {
+          id = tweet.id;
+          author = tweet.author;
+          content = tweet.content;
+          timestamp = tweet.timestamp;
+          likes = tweet.likes + 1;
+          retweets = tweet.retweets;
+          comments = tweet.comments;
+        };
+        tweets.put(id, updatedTweet);
         true
       };
+      case null { false };
     }
   };
 
-  public func updateTabSize(id : Nat, size : (Nat, Nat)) : async Bool {
-    switch (tabs.get(id)) {
-      case (null) { false };
-      case (?tab) {
-        let updatedTab : Tab = {
-          id = tab.id;
-          tabType = tab.tabType;
-          content = tab.content;
-          timestamp = Time.now();
-          position = tab.position;
-          size = size;
-          attachedTo = tab.attachedTo;
+  public shared(msg) func retweet(id: Nat) : async Bool {
+    switch (tweets.get(id)) {
+      case (?tweet) {
+        let updatedTweet: Tweet = {
+          id = tweet.id;
+          author = tweet.author;
+          content = tweet.content;
+          timestamp = tweet.timestamp;
+          likes = tweet.likes;
+          retweets = tweet.retweets + 1;
+          comments = tweet.comments;
         };
-        tabs.put(id, updatedTab);
+        tweets.put(id, updatedTweet);
         true
       };
+      case null { false };
     }
   };
 
-  public func deleteTab(id : Nat) : async Bool {
-    switch (tabs.remove(id)) {
-      case (null) { false };
-      case (?_) { true };
-    }
-  };
-
-  public query func getTabs() : async [Tab] {
-    Array.map<(Nat, Tab), Tab>(Iter.toArray(tabs.entries()), func (entry) { entry.1 })
-  };
-
-  public func uploadDocument(fileName : Text, fileType : Text, content : Blob, position : (Nat, Nat), size : (Nat, Nat)) : async Nat {
-    let id = nextDocId;
-    nextDocId += 1;
-    let newDoc : Document = {
-      id = id;
-      fileName = fileName;
-      fileType = fileType;
-      content = content;
-      timestamp = Time.now();
-      position = position;
-      size = size;
-    };
-    documents.put(id, newDoc);
-    id
-  };
-
-  public func updateDocumentPosition(id : Nat, position : (Nat, Nat)) : async Bool {
-    switch (documents.get(id)) {
-      case (null) { false };
-      case (?doc) {
-        let updatedDoc : Document = {
-          id = doc.id;
-          fileName = doc.fileName;
-          fileType = doc.fileType;
-          content = doc.content;
-          timestamp = Time.now();
-          position = position;
-          size = doc.size;
+  public shared(msg) func comment(id: Nat) : async Bool {
+    switch (tweets.get(id)) {
+      case (?tweet) {
+        let updatedTweet: Tweet = {
+          id = tweet.id;
+          author = tweet.author;
+          content = tweet.content;
+          timestamp = tweet.timestamp;
+          likes = tweet.likes;
+          retweets = tweet.retweets;
+          comments = tweet.comments + 1;
         };
-        documents.put(id, updatedDoc);
+        tweets.put(id, updatedTweet);
         true
       };
-    }
-  };
-
-  public func updateDocumentSize(id : Nat, size : (Nat, Nat)) : async Bool {
-    switch (documents.get(id)) {
-      case (null) { false };
-      case (?doc) {
-        let updatedDoc : Document = {
-          id = doc.id;
-          fileName = doc.fileName;
-          fileType = doc.fileType;
-          content = doc.content;
-          timestamp = Time.now();
-          position = doc.position;
-          size = size;
-        };
-        documents.put(id, updatedDoc);
-        true
-      };
-    }
-  };
-
-  public func deleteDocument(id : Nat) : async Bool {
-    switch (documents.remove(id)) {
-      case (null) { false };
-      case (?_) { true };
-    }
-  };
-
-  public query func getDocuments() : async [(Nat, Text, Text, (Nat, Nat), (Nat, Nat))] {
-    Array.map<(Nat, Document), (Nat, Text, Text, (Nat, Nat), (Nat, Nat))>
-      (Iter.toArray(documents.entries()), func (entry) {
-        (entry.1.id, entry.1.fileName, entry.1.fileType, entry.1.position, entry.1.size)
-      })
-  };
-
-  public func getDocumentContent(id : Nat) : async ?Blob {
-    switch (documents.get(id)) {
-      case (null) { null };
-      case (?doc) { ?doc.content };
+      case null { false };
     }
   };
 }
